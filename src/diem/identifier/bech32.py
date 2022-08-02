@@ -75,7 +75,7 @@ def bech32_address_decode(expected_hrp: str, bech32: str) -> typing.Tuple[int, b
         raise Bech32Error(f"Bech32 size should be {_DIEM_BECH32_SIZE}, but it is: {len_bech32}")
 
     # do not allow mixed case per BIP 173
-    if bech32 != bech32.lower() and bech32 != bech32.upper():
+    if bech32 not in [bech32.lower(), bech32.upper()]:
         raise Bech32Error(f"Mixed case Bech32 addresses are not allowed, got: {bech32}")
 
     bech32 = bech32.lower()
@@ -91,7 +91,7 @@ def bech32_address_decode(expected_hrp: str, bech32: str) -> typing.Tuple[int, b
         raise Bech32Error(f"Non-expected Bech32 separator: {bech32[len_hrp]}")
 
     # check characters after separator in Bech32 alphabet
-    if not all(x in _BECH32_CHARSET for x in bech32[len_hrp + 1 :]):
+    if any(x not in _BECH32_CHARSET for x in bech32[len_hrp + 1 :]):
         raise Bech32Error(f"Invalid Bech32 characters detected: {bech32}")
 
     # version is defined by the index of the Bech32 character after separator

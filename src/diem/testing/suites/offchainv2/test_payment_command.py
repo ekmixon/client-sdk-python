@@ -531,7 +531,7 @@ async def assert_payment_command_field_error(
         currency=currency,
         amount=travel_rule_threshold,
     )
-    full_field_name = "command." + field_name
+    full_field_name = f"command.{field_name}"
     set_field(request, full_field_name, field_value)
 
     status_code, resp = await send_request_json(

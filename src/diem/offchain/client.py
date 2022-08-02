@@ -258,13 +258,10 @@ class Client:
         metadata = await self.jsonrpc_client.get_metadata()
         limit = metadata.dual_attestation_limit
         for info in currencies:
-            if info.code == currency:
-                if _is_under_the_threshold(limit, info.to_xdx_exchange_rate, amount):
-                    return "payment amount is %s (rate: %s) under travel rule threshold %s" % (
-                        amount,
-                        info.to_xdx_exchange_rate,
-                        limit,
-                    )
+            if info.code == currency and _is_under_the_threshold(
+                limit, info.to_xdx_exchange_rate, amount
+            ):
+                return f"payment amount is {amount} (rate: {info.to_xdx_exchange_rate}) under travel rule threshold {limit}"
 
     async def validate_currency_code(
         self, currency: str, currencies: typing.Optional[typing.List[jsonrpc.CurrencyInfo]] = None

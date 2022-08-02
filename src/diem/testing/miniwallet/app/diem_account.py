@@ -75,8 +75,7 @@ class DiemAccount:
             if account.account_address == address:
                 return account
         raise ValueError(
-            "could not find account by address: %s in child accounts: %s"
-            % (address.to_hex(), list(map(lambda a: a.to_dict(), self._child_accounts)))
+            f"could not find account by address: {address.to_hex()} in child accounts: {list(map(lambda a: a.to_dict(), self._child_accounts))}"
         )
 
     async def _ensure_account_balance(self, account: LocalAccount, txn: Transaction) -> None:

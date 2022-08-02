@@ -40,21 +40,21 @@ def event_loop() -> Generator[asyncio.events.AbstractEventLoop, None, None]:
 async def target_client(diem_client: AsyncClient) -> AsyncGenerator[RestClient, None]:
     if is_self_check():
         conf = AppConfig(name="target-wallet", vasp_domain=generate_vasp_domain("target"))
-        print("self-checking, launch target app with config %s" % conf)
+        print(f"self-checking, launch target app with config {conf}")
         _, runner = await conf.start(diem_client)
         try:
             yield conf.create_client()
         finally:
             await runner.cleanup()
     else:
-        print("target wallet server url: %s" % target_url())
+        print(f"target wallet server url: {target_url()}")
         yield RestClient(name="target-wallet-client", server_url=target_url(), events_api_is_optional=True)
 
 
 @pytest.fixture(scope="package")
 async def diem_client() -> AsyncGenerator[AsyncClient, None]:
     async with create_client() as client:
-        print("Diem JSON-RPC URL: %s" % client._url)
+        print(f"Diem JSON-RPC URL: {client._url}")
         yield client
 
 
@@ -72,14 +72,12 @@ def stub_wallet_app(start_stub_wallet: Tuple[AppConfig, App]) -> App:
 async def start_stub_wallet(diem_client: AsyncClient) -> AsyncGenerator[Tuple[AppConfig, App], None]:
     domain = generate_vasp_domain("stub")
     conf = AppConfig(name="stub-wallet", server_conf=ServerConfig(**dmw_stub_server()), vasp_domain=domain)
-    account_conf = dmw_stub_diem_account_config()
-    if account_conf:
-        print("loads stub account config: %s" % account_conf)
+    if account_conf := dmw_stub_diem_account_config():
+        print(f"loads stub account config: {account_conf}")
         conf.account_config = json.loads(account_conf)
-    hrp = dmw_stub_diem_account_hrp()
-    if hrp:
+    if hrp := dmw_stub_diem_account_hrp():
         conf.account_config["hrp"] = hrp
-    print("Start stub app with config %s" % conf)
+    print(f"Start stub app with config {conf}")
     app, runner = await conf.start(diem_client)
     try:
         yield (conf, app)
@@ -233,12 +231,12 @@ def assert_response_error(
 
 def set_field(dic: Dict[str, Any], field: str, value: Any) -> None:  # pyre-ignore
     path = field.split(".")
-    for f in path[0 : len(path) - 1]:
+    for f in path[:-1]:
         if f not in dic:
             dic[f] = {}
         dic = dic[f]
 
-    dic[path[len(path) - 1]] = value
+    dic[path[-1]] = value
 
 
 async def wait_for(fn: Callable[[], Awaitable[None]], max_tries: int = 60, delay: float = 0.1) -> None:

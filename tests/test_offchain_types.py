@@ -465,7 +465,7 @@ def set_field(root_dic, changes):
     for field, value in changes.items():
         path = field.split(".")
         dic = root_dic
-        for f in path[0 : len(path) - 1]:
+        for f in path[:-1]:
             if f not in dic:
                 dic[f] = {}
             dic = dic[f]

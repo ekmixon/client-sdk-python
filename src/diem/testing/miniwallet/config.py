@@ -54,7 +54,7 @@ class AppConfig:
 
     def create_client(self) -> RestClient:
         self.logger.info("Creating client pointing to %s", self.server_url)
-        return RestClient(server_url=self.server_url, name="%s-client" % self.name)
+        return RestClient(server_url=self.server_url, name=f"{self.name}-client")
 
     async def setup_account(self, client: AsyncClient) -> None:
         self.logger.info("faucet: mint %s", self.account.account_address.to_hex())

@@ -335,7 +335,7 @@ class BinaryDeserializer:
                 item_type = types[0]
                 length = self.deserialize_len()
                 result = []
-                for i in range(0, length):
+                for _ in range(length):
                     item = self.deserialize_any(item_type)
                     result.append(item)
 
@@ -361,9 +361,9 @@ class BinaryDeserializer:
             elif getattr(obj_type, "__origin__") == dict:  # Map
                 assert len(types) == 2
                 length = self.deserialize_len()
-                result = dict()
+                result = {}
                 previous_key_slice = None
-                for i in range(0, length):
+                for _ in range(length):
                     key_start = self.get_buffer_offset()
                     key = self.deserialize_any(types[0])
                     key_end = self.get_buffer_offset()
@@ -381,27 +381,24 @@ class BinaryDeserializer:
             else:
                 raise st.DeserializationError("Unexpected type", obj_type)
 
+        elif dataclasses.is_dataclass(obj_type):
+            values = []
+            fields = dataclasses.fields(obj_type)
+            typing_hints = get_type_hints(obj_type)
+            self.increase_container_depth()
+            for field in fields:
+                field_type = typing_hints[field.name]
+                field_value = self.deserialize_any(field_type)
+                values.append(field_value)
+            self.decrease_container_depth()
+            return obj_type(*values)
+
+        elif hasattr(obj_type, "VARIANTS"):
+            variant_index = self.deserialize_variant_index()
+            if variant_index not in range(len(obj_type.VARIANTS)):
+                raise st.DeserializationError("Unexpected variant index", variant_index)
+            new_type = obj_type.VARIANTS[variant_index]
+            return self.deserialize_any(new_type)
+
         else:
-            # handle structs
-            if dataclasses.is_dataclass(obj_type):
-                values = []
-                fields = dataclasses.fields(obj_type)
-                typing_hints = get_type_hints(obj_type)
-                self.increase_container_depth()
-                for field in fields:
-                    field_type = typing_hints[field.name]
-                    field_value = self.deserialize_any(field_type)
-                    values.append(field_value)
-                self.decrease_container_depth()
-                return obj_type(*values)
-
-            # handle variant
-            elif hasattr(obj_type, "VARIANTS"):
-                variant_index = self.deserialize_variant_index()
-                if variant_index not in range(len(obj_type.VARIANTS)):
-                    raise st.DeserializationError("Unexpected variant index", variant_index)
-                new_type = obj_type.VARIANTS[variant_index]
-                return self.deserialize_any(new_type)
-
-            else:
-                raise st.DeserializationError("Unexpected type", obj_type)
+            raise st.DeserializationError("Unexpected type", obj_type)

@@ -111,7 +111,7 @@ async def test_send_payment_with_invalid_account_identifier_checksum_as_payee(
     receiver_account = await stub_client.create_account()
     try:
         receiver_account_identifier = await receiver_account.generate_account_identifier()
-        invalid_account_identifier = receiver_account_identifier[:-6] + "000000"
+        invalid_account_identifier = f"{receiver_account_identifier[:-6]}000000"
         with pytest.raises(aiohttp.ClientResponseError, match="400"):
             await sender_account.send_payment(currency=currency, amount=amount, payee=invalid_account_identifier)
         assert await sender_account.balance(currency) == amount

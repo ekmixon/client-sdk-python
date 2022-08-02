@@ -21,7 +21,7 @@ class MatchResult:
         return MatchResult(
             success=success,
             matched_fields=fields if success else [],
-            mismatched_fields=fields if not success else [],
+            mismatched_fields=[] if success else fields,
         )
 
     @staticmethod
@@ -138,10 +138,7 @@ class Machine(typing.Generic[T]):
         return state in self.initials
 
     def is_valid_transition(self, state: State[T], to: State[T], event_data: T) -> bool:
-        for t in self.transitions:
-            if t.state == state and t.to == to:
-                return True
-        return False
+        return any(t.state == state and t.to == to for t in self.transitions)
 
     def match_state(self, event_data: T) -> State[T]:
         ret = self.match_states(event_data)

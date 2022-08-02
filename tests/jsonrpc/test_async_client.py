@@ -72,7 +72,7 @@ async def test_get_account(client: AsyncClient):
 
 async def test_get_account_by_invalid_hex_encoded_account_address(client: AsyncClient):
     with pytest.raises(InvalidAccountAddressError):
-        await client.get_account(TREASURY_ADDRESS + "invalid")
+        await client.get_account(f"{TREASURY_ADDRESS}invalid")
 
 
 async def test_get_account_not_exist(client: AsyncClient):
@@ -196,7 +196,7 @@ async def test_get_account_state_with_proof(client: AsyncClient):
 
 async def test_handle_stale_response_error(client: AsyncClient):
     last = (await client.get_metadata()).version
-    for i in range(0, 20):
+    for _ in range(20):
         metadata = await client.get_metadata()
         assert metadata.version >= last
         assert client.get_last_known_state().version == metadata.version

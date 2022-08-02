@@ -12,7 +12,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # Regex the file directly as we can not import it due to
 # src/diem/__init__.py importing from external repo not in requirements.txt
 with open(os.path.join(this_directory, "src", "diem", "__VERSION__.py"), encoding='utf-8') as f:
-    version = re.search(r'VERSION = "(.*?)"', f.read(), re.MULTILINE).group(1)
+    version = re.search(r'VERSION = "(.*?)"', f.read(), re.MULTILINE)[1]
 
 setup(
     name="diem",

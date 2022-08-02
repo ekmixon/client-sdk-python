@@ -157,7 +157,7 @@ class App:
         elif txn.reference_id:
             cmd = self.store.find(PaymentCommand, reference_id=txn.reference_id)
             return self.diem_account.travel_metadata(cmd.to_offchain_command())
-        raise ValueError("could not create diem payment transacton metadata: %s" % txn)
+        raise ValueError(f"could not create diem payment transacton metadata: {txn}")
 
     async def _send_pending_payments(self) -> None:
         txns = self.store.find_all(Transaction, status=Transaction.Status.pending)
@@ -216,7 +216,7 @@ class App:
             await self.send_diem_p2p_transaction(txn)
         except (jsonrpc.TransactionExpired, jsonrpc.TransactionExecutionFailed) as e:
             self.logger.error("txn(%s) execution expired / failed(%s), canceled", txn, e)
-            reason = "something went wrong with transaction execution: %s" % e
+            reason = f"something went wrong with transaction execution: {e}"
             self.store.update(txn, status=Transaction.Status.canceled, cancel_reason=reason)
 
     async def _exchange_diem_id(self, payer: Account, diem_id: str, reference_id: str) -> str:
@@ -229,7 +229,7 @@ class App:
             counterparty_account_identifier=identifier.encode_account(address, None, self.diem_account.hrp),
             sign=self.diem_account.sign_by_compliance_key,
         )
-        err_msg = "invalid reference_id_exchange response: %s" % response
+        err_msg = f"invalid reference_id_exchange response: {response}"
         if response.result:
             address = response.result.get("receiver_address")
             await self._validate_account_identifier(address, err_msg)
@@ -239,7 +239,7 @@ class App:
     async def _validate_kyc_data(self, name: str, val: Dict[str, Any]) -> None:
         try:
             offchain.from_dict(val, KycDataObject)
-        except (JSONDecodeError, offchain.types.FieldError) as e:
+        except offchain.types.FieldError as e:
             raise ValueError("%r must be JSON-encoded KycDataObject: %s" % (name, e))
 
     async def _validate_currency_code(self, name: str, val: str) -> None:
@@ -252,7 +252,7 @@ class App:
         account_address, _ = self.diem_account.decode_account_identifier(val)
         account = await self.diem_client.get_account(account_address)
         if account is None:
-            raise ValueError(err_msg + ", account address: %s" % account_address.to_hex())
+            raise ValueError(err_msg + f", account address: {account_address.to_hex()}")
 
     async def _validate_amount(self, name: str, val: int) -> None:
         if val < 0:
@@ -266,7 +266,7 @@ class App:
         if txn.get("payee"):
             balance = self._balances(txn["account_id"]).get(txn["currency"], 0)
             if balance < txn["amount"]:
-                raise ValueError("account balance not enough: %s (%s)" % (balance, txn))
+                raise ValueError(f"account balance not enough: {balance} ({txn})")
 
     def _balances(self, account_id: str) -> Dict[str, int]:
         ret = {}
@@ -292,7 +292,10 @@ class App:
         domain_map = await self.diem_client.get_vasp_domain_map()
         account_address = domain_map.get(domain)
         if account_address is None:
-            raise ValueError("could not find onchain account address by diem id: %s" % diem_id)
+            raise ValueError(
+                f"could not find onchain account address by diem id: {diem_id}"
+            )
+
         return account_address
 
     def _create_reference_id(self, account_id: str) -> str:

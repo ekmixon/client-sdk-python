@@ -169,15 +169,12 @@ def decode_transaction_script(
 
 
 def balance(account: jsonrpc.Account, currency: str) -> int:
-    for b in account.balances:
-        if b.currency == currency:
-            return b.amount
-    return 0
+    return next((b.amount for b in account.balances if b.currency == currency), 0)
 
 
 def to_snake(o: typing.Any) -> str:  # pyre-ignore
     if isinstance(o, str):
-        return "".join(["_" + i.lower() if i.isupper() else i for i in o]).lstrip("_")
+        return "".join([f"_{i.lower()}" if i.isupper() else i for i in o]).lstrip("_")
     elif hasattr(o, "__name__"):
         return to_snake(getattr(o, "__name__"))
     return to_snake(type(o))
@@ -209,7 +206,10 @@ async def async_wait_for_port(port: int, host: str = "localhost", timeout: float
                 break
         except OSError as e:
             if time.perf_counter() - start_time >= timeout:
-                raise TimeoutError("waited %s for %s:%s accept connection." % (timeout, host, port)) from e
+                raise TimeoutError(
+                    f"waited {timeout} for {host}:{port} accept connection."
+                ) from e
+
             await asyncio.sleep(0.01)
 
 

@@ -110,7 +110,7 @@ class Faucet:
             response.raise_for_status()
             de = bcs.BcsDeserializer(bytes.fromhex(await response.text()))
 
-        for i in range(de.deserialize_len()):
+        for _ in range(de.deserialize_len()):
             txn = de.deserialize_any(diem_types.SignedTransaction)
             try:
                 await self._client.wait_for_transaction(txn)

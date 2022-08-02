@@ -30,7 +30,7 @@ def set_env(name: str, is_io: bool = False):  # pyre-ignore
         if val:
             val = val.read() if is_io else str(val)
             os.environ[name] = val
-            print("%s: %s" % (name, val))
+            print(f"{name}: {val}")
 
         return val
 
@@ -57,7 +57,6 @@ def main() -> None:
 @click.option(
     "--jsonrpc", "-j", default=JSON_RPC_URL, callback=set_env("DIEM_JSON_RPC_URL"), help="Diem fullnode JSON-RPC URL."
 )
-# pyre-ignore
 @click.option("--faucet", "-f", default=FAUCET_URL, callback=set_env("DIEM_FAUCET_URL"), help="Testnet faucet URL.")
 @click.option("--disable-events-api", "-o", default=False, help="Disable account events API.", type=bool, is_flag=True)
 @click.option(
@@ -102,11 +101,11 @@ async def start_server(
     if hrp:
         conf.account_config["hrp"] = hrp
 
-    print("Server Config: %s" % conf)
+    print(f"Server Config: {conf}")
 
     client = create_client()
     metadata = await client.get_metadata()
-    print("Diem chain id: %s" % metadata.chain_id)
+    print(f"Diem chain id: {metadata.chain_id}")
 
     _, runner = await conf.start(client)
     try:
@@ -217,9 +216,9 @@ def test(
 
     url = urlsplit(target)
     target_port = url.port or 80
-    print("Waiting for %s:%s ready" % (url.hostname, target_port))
+    print(f"Waiting for {url.hostname}:{target_port} ready")
     utils.wait_for_port(target_port, host=str(url.hostname), timeout=wait_for_target_timeout)
-    print("Target wallet at %s:%s is ready for connection" % (url.hostname, target_port))
+    print(f"Target wallet at {url.hostname}:{target_port} is ready for connection")
 
     args = ["--pyargs", "diem.testing.suites.basic"]
     if include_offchain_v2:
@@ -233,7 +232,7 @@ def test(
         args.append("-s")
         args.append("-v")
     if logfile:
-        args.append("--log-file=%s" % logfile)
+        args.append(f"--log-file={logfile}")
 
     code = pytest.main(args)
     sys.stdout.flush()

@@ -61,14 +61,13 @@ class RestClient:
 
     # pyre-ignore
     async def send(self, method: str, path: str, data: Optional[str] = None, return_text: bool = False) -> Any:
-        url = "%s/%s" % (self.server_url.rstrip("/"), path.lstrip("/"))
+        url = f'{self.server_url.rstrip("/")}/{path.lstrip("/")}'
         self.logger.debug("%s %s: %s", method, path, data)
         headers = {
             "Content-Type": "application/json",
             "User-Agent": jsonrpc.USER_AGENT_HTTP_HEADER,
         }
-        tc = os.getenv("PYTEST_CURRENT_TEST")
-        if tc:
+        if tc := os.getenv("PYTEST_CURRENT_TEST"):
             headers["X-Test-Case"] = tc.split("::")[-1]
         async with self.session_factory() as session:
             async with session.request(method, url.lower(), data=data, headers=headers) as resp:
@@ -84,9 +83,7 @@ class RestClient:
                 except ClientResponseError as e:
                     e.message += "\n" + body
                     raise e
-                if return_text:
-                    return body
-                return json.loads(body)
+                return body if return_text else json.loads(body)
 
 
 def try_json(text: str) -> str:
@@ -94,7 +91,7 @@ def try_json(text: str) -> str:
         obj = json.loads(text)
         if isinstance(obj, dict):
             # pretty print error json stacktrace info
-            return "\n".join(["%s: %s" % (k, v) for k, v in obj.items()])
+            return "\n".join([f"{k}: {v}" for k, v in obj.items()])
         return json.dumps(obj, indent=2)
     except Exception:
         return text
@@ -208,4 +205,4 @@ class AccountResource:
         return await self.client.get(self._resources("balance"))
 
     def _resources(self, resource: str) -> str:
-        return "/accounts/%s/%ss" % (self.id, resource)
+        return f"/accounts/{self.id}/{resource}s"

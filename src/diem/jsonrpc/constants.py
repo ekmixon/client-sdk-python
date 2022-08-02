@@ -13,6 +13,7 @@ See the following Diem JSON-RPC response type documents for more details:
 
 """
 
+
 from diem.__VERSION__ import VERSION
 
 
@@ -69,4 +70,4 @@ DEFAULT_MAX_RETRIES: int = 15
 DEFAULT_RETRY_DELAY: float = 0.2
 DEFAULT_WAIT_FOR_TRANSACTION_TIMEOUT_SECS: float = 30.0
 DEFAULT_WAIT_FOR_TRANSACTION_WAIT_DURATION_SECS: float = 0.2
-USER_AGENT_HTTP_HEADER: str = "diem-client-sdk-python / %s" % VERSION
+USER_AGENT_HTTP_HEADER: str = f"diem-client-sdk-python / {VERSION}"

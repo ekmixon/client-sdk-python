@@ -80,12 +80,12 @@ def encode_intent(
 
     params = []
     if currency_code:
-        params.append("c=%s" % currency_code)
+        params.append(f"c={currency_code}")
     if amount is not None and amount > 0:
-        params.append("am=%s" % amount)
+        params.append(f"am={amount}")
     if params:
-        return "diem://%s?%s" % (encoded_account_identifier, "&".join(params))
-    return "diem://%s" % encoded_account_identifier
+        return f'diem://{encoded_account_identifier}?{"&".join(params)}'
+    return f"diem://{encoded_account_identifier}"
 
 
 def decode_intent(encoded_intent_identifier: str, hrp: str) -> Intent:
@@ -180,9 +180,7 @@ def decode_account(encoded_address: str, hrp: str) -> typing.Tuple[diem_types.Ac
 def decode_hrp(encoded_address: str) -> str:
     if len(encoded_address) not in _DIEM_BECH32_SIZE:
         raise ValueError("Invalid account identifier address size: {encoded_address}")
-    if encoded_address[:2] == DM:
-        return DM
-    return encoded_address[:3]
+    return DM if encoded_address[:2] == DM else encoded_address[:3]
 
 
 def decode_account_address(encoded_address: str, hrp: str) -> diem_types.AccountAddress:

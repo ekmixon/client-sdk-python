@@ -163,11 +163,15 @@ def find_refund_reference_event(
         return None
 
     address = utils.account_address_hex(receiver)
-    for event in txn.events:
-        if event.data.type == "receivedpayment" and event.data.receiver == address:
-            return event
-
-    return None
+    return next(
+        (
+            event
+            for event in txn.events
+            if event.data.type == "receivedpayment"
+            and event.data.receiver == address
+        ),
+        None,
+    )
 
 
 def payment_metadata(

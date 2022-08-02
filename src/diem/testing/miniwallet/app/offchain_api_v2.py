@@ -33,20 +33,23 @@ class OffChainAPIv2:
         try:
             if not request_id:
                 raise offchain.protocol_error(
-                    offchain.ErrorCode.missing_http_header, "missing %s" % offchain.X_REQUEST_ID
+                    offchain.ErrorCode.missing_http_header,
+                    f"missing {offchain.X_REQUEST_ID}",
                 )
+
             if not offchain.UUID_REGEX.match(request_id):
                 raise offchain.protocol_error(
-                    offchain.ErrorCode.invalid_http_header, "invalid %s" % offchain.X_REQUEST_ID
+                    offchain.ErrorCode.invalid_http_header,
+                    f"invalid {offchain.X_REQUEST_ID}",
                 )
+
             request = await self.app.offchain.deserialize_inbound_request(sender_address, request_bytes)
         except offchain.Error as e:
             err_msg = "process offchain request id or bytes is invalid, request id: %s, bytes: %s"
             self.app.logger.exception(err_msg, request_id, request_bytes)
             return offchain.reply_request(cid=None, err=e.obj)
 
-        cached = self.cache.get(request.cid)
-        if cached:
+        if cached := self.cache.get(request.cid):
             return cached
         response = await self._process_offchain_request(sender_address, request)
         self.cache[request.cid] = response
@@ -87,13 +90,14 @@ class OffChainAPIv2:
         self, sender_address: str, request: CommandRequestObject
     ) -> CommandResponseObject:
         try:
-            handler = "_handle_offchain_%s" % utils.to_snake(request.command_type)
+            handler = f"_handle_offchain_{utils.to_snake(request.command_type)}"
             if not hasattr(self, handler):
                 raise offchain.protocol_error(
                     offchain.ErrorCode.unknown_command_type,
-                    "unknown command_type: %s" % request.command_type,
+                    f"unknown command_type: {request.command_type}",
                     field="command_type",
                 )
+
             fn = getattr(self, handler)
             result = await fn(sender_address, request)
             return offchain.reply_request(cid=request.cid, result=result)
@@ -183,9 +187,8 @@ class OffChainAPIv2:
                 continue
             try:
                 offchain_cmd = cmd.to_offchain_command()
-                action = offchain_cmd.follow_up_action()
-                if action:
-                    fn = getattr(self, "_offchain_action_%s" % action.value)
+                if action := offchain_cmd.follow_up_action():
+                    fn = getattr(self, f"_offchain_action_{action.value}")
                     new_offchain_cmd = fn(cmd.account_id, offchain_cmd)
                     self._update_payment_command(cmd, new_offchain_cmd)
                     await self._send_offchain_command(new_offchain_cmd)

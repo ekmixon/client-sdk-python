@@ -74,7 +74,7 @@ def test_get_account_by_hex_encoded_account_address():
 def test_get_account_by_invalid_hex_encoded_account_address():
     client = testnet.create_client()
     with pytest.raises(InvalidAccountAddressError):
-        client.get_account(TREASURY_ADDRESS + "invalid")
+        client.get_account(f"{TREASURY_ADDRESS}invalid")
 
 
 def test_get_account_not_exist():
@@ -232,7 +232,7 @@ def test_get_account_state_with_proof():
 def test_handle_stale_response_error():
     client = testnet.create_client()
     last = client.get_metadata().version
-    for i in range(0, 20):
+    for _ in range(20):
         metadata = client.get_metadata()
         assert metadata.version >= last
         assert client.get_last_known_state().version == metadata.version

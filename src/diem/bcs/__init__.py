@@ -42,9 +42,10 @@ class BcsSerializer(sb.BinarySerializer):
             return
         buf = self.output.getbuffer()
         offsets.append(len(buf))
-        slices = []
-        for i in range(1, len(offsets)):
-            slices.append(bytes(buf[offsets[i - 1] : offsets[i]]))
+        slices = [
+            bytes(buf[offsets[i - 1] : offsets[i]]) for i in range(1, len(offsets))
+        ]
+
         buf.release()
         slices.sort()
         self.output.seek(offsets[0])

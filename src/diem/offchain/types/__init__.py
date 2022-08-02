@@ -41,7 +41,7 @@ class FieldError(ValueError):
     def __init__(self, code: str, field: str, msg: str) -> None:
         super().__init__(msg)
         self.code: str = code
-        self.field: typing.Optional[str] = field if field else None
+        self.field: typing.Optional[str] = field or None
 
 
 class InvalidOverwriteError(FieldError):
@@ -112,7 +112,7 @@ def _from_dict(obj: typing.Any, klass: typing.Type[typing.Any], field_path: str)
             unknown_fields.remove(field.name)
         fields[field.name] = _field_value_from_dict(field, obj, field_path)
 
-    if len(unknown_fields) > 0:
+    if unknown_fields:
         unknown_fields.sort()
         full_name = _join_field_path(field_path, unknown_fields[0])
         field_names = ", ".join(unknown_fields)
@@ -133,8 +133,7 @@ def _field_value_from_dict(field: dataclasses.Field, obj: typing.Any, field_path
             return None
         raise FieldError(ErrorCode.missing_field, full_name, f"missing field: {full_name}")
 
-    valid_values = field.metadata.get("valid-values")
-    if valid_values:
+    if valid_values := field.metadata.get("valid-values"):
         if isinstance(valid_values, list) and val not in valid_values:
             raise FieldError(ErrorCode.invalid_field_value, full_name, f"expect one of {valid_values}, but got: {val}")
         if isinstance(val, str) and isinstance(valid_values, re.Pattern) and not valid_values.match(val):
@@ -281,7 +280,7 @@ def validate_write_once_fields(path: str, new: typing.Any, prior: typing.Any) ->
     for field in dataclasses.fields(new_type):
         prior_value = getattr(prior, field.name)
         new_value = getattr(new, field.name)
-        field_path = path + "." + field.name
+        field_path = f"{path}.{field.name}"
         if field.metadata.get("immutable") and prior_value != new_value:
             raise InvalidOverwriteError(field_path, prior_value, new_value, "immutable")
         if field.metadata.get("write_once") and prior_value is not None and prior_value != new_value:

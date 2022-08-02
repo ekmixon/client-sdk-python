@@ -253,7 +253,7 @@ class AsyncClient:
         """
 
         curr = self._last_known_server_state
-        if curr.chain_id != -1 and curr.chain_id != chain_id:
+        if curr.chain_id not in [-1, chain_id]:
             raise InvalidServerResponse(f"last known chain id {curr.chain_id}, " f"but got {chain_id}")
         if curr.version > version:
             raise StaleResponseError(f"last known version {curr.version} > {version}")
@@ -312,7 +312,7 @@ class AsyncClient:
         """
 
         address = utils.account_address_hex(account_address)
-        params = [address, int(sequence), bool(include_events)]
+        params = [address, sequence, bool(include_events)]
         return await self.execute("get_account_transaction", params, _parse_obj(lambda: rpc.Transaction()))
 
     async def get_account_transactions(
@@ -330,7 +330,7 @@ class AsyncClient:
         """
 
         address = utils.account_address_hex(account_address)
-        params = [address, int(sequence), int(limit), bool(include_events)]
+        params = [address, sequence, limit, bool(include_events)]
         return await self.execute("get_account_transactions", params, _parse_list(lambda: rpc.Transaction()))
 
     async def get_transactions(
@@ -346,7 +346,7 @@ class AsyncClient:
         See [JSON-RPC API Doc](https://github.com/diem/diem/blob/master/json-rpc/docs/method_get_transactions.md)
         """
 
-        params = [int(start_version), int(limit), bool(include_events)]
+        params = [start_version, limit, bool(include_events)]
         return await self.execute("get_transactions", params, _parse_list(lambda: rpc.Transaction()))
 
     async def get_events(self, event_stream_key: str, start: int, limit: int) -> typing.List[rpc.Event]:
@@ -357,11 +357,11 @@ class AsyncClient:
         See [JSON-RPC API Doc](https://github.com/diem/diem/blob/master/json-rpc/docs/method_get_events.md)
         """
 
-        params = [event_stream_key, int(start), int(limit)]
+        params = [event_stream_key, start, limit]
         return await self.execute("get_events", params, _parse_list(lambda: rpc.Event()))
 
     async def get_state_proof(self, version: int) -> rpc.StateProof:
-        params = [int(version)]
+        params = [version]
         return await self.execute("get_state_proof", params, _parse_obj(lambda: rpc.StateProof()))
 
     async def get_account_state_with_proof(

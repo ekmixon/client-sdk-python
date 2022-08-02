@@ -3,7 +3,7 @@
 
 
 def create_diem_id(user_identifier: str, vasp_domain_identifier: str) -> str:
-    diem_id = user_identifier + "@" + vasp_domain_identifier
+    diem_id = f"{user_identifier}@{vasp_domain_identifier}"
     if not is_diem_id(diem_id):
         raise ValueError(f"{diem_id} is not a valid DiemID.")
     return diem_id
@@ -20,10 +20,7 @@ def is_diem_id(account_identifier: str) -> bool:
     for ch in user_identifier:
         if not ch.isalnum() and ch != ".":
             return False
-    for ch in vasp_identifier:
-        if not ch.isalnum() and ch != ".":
-            return False
-    return True
+    return not any(not ch.isalnum() and ch != "." for ch in vasp_identifier)
 
 
 def get_user_identifier_from_diem_id(diem_id: str) -> str:

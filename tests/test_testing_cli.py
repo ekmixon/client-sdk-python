@@ -27,7 +27,7 @@ def test_version(runner: CliRunner) -> None:
     for version_opt in ["-v", "--version"]:
         result = runner.invoke(cli.main, [version_opt])
         assert result.exit_code == 0
-        assert ("version %s" % version) in result.output
+        assert f"version {version}" in result.output
 
 
 def test_help_shortcut(runner: CliRunner) -> None:
@@ -232,7 +232,7 @@ def start_test(runner: CliRunner, conf: ServerConfig, options: List[str] = []) -
 
 def start_target_server(runner: CliRunner, options: List[str] = []) -> ServerConfig:
     conf = ServerConfig(host="0.0.0.0")
-    conf.base_url = "http://127.0.0.1:%s" % conf.port
+    conf.base_url = f"http://127.0.0.1:{conf.port}"
 
     def start_server():
         runner.invoke(

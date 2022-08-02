@@ -33,9 +33,9 @@ class InMemoryStore:
         list = self._select(klass, **conds)
         ret = next(list, None)
         if not ret:
-            raise NotFoundError("%s not found by %s" % (klass.__name__, conds))
+            raise NotFoundError(f"{klass.__name__} not found by {conds}")
         if next(list, None):
-            raise ValueError("found multiple resources data matches %s" % conds)
+            raise ValueError(f"found multiple resources data matches {conds}")
         return ret
 
     def find_all(self, klass: Type[T], **conds: Any) -> List[T]:
@@ -56,7 +56,7 @@ class InMemoryStore:
 
     def _record_event(self, obj: T, action: str, data: Dict[str, Any]) -> None:
         if not isinstance(obj, Event):
-            type = "%s_%s" % (action, utils.to_snake(obj))
+            type = f"{action}_{utils.to_snake(obj)}"
             account_id = obj.id if isinstance(obj, Account) else obj.account_id  # pyre-ignore
             data["id"] = obj.id
             self._insert(Event, account_id=account_id, type=type, data=json.dumps(data), timestamp=_ts())
@@ -65,7 +65,7 @@ class InMemoryStore:
         records = self.resources.get(type(obj), [])
         index = next(iter([i for i, res in enumerate(records) if res["id"] == obj.id]), None)
         if index is None:
-            raise NotFoundError("could not find resource by id: %s" % obj.id)
+            raise NotFoundError(f"could not find resource by id: {obj.id}")
         records[index] = asdict(obj)
 
     def _insert(self, klass: Type[T], **res: Any) -> Dict[str, Any]:
@@ -82,10 +82,7 @@ class InMemoryStore:
 
 
 def _match(res: Dict[str, Any], **conds: Any) -> bool:
-    for k, v in conds.items():
-        if res.get(k) != v:
-            return False
-    return True
+    return all(res.get(k) == v for k, v in conds.items())
 
 
 def _ts() -> int:

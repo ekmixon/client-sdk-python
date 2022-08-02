@@ -98,9 +98,8 @@ async def test_account_balance_validation_should_exclude_canceled_transactions(
 
     await wait_for_event(sender, "updated_transaction", id=payment.id, status="canceled")
 
-    await sender.send_payment(currency, travel_rule_threshold - 1, payee)
-
-    await wait_for_balance(receiver, currency, travel_rule_threshold - 1)
+    await sender.send_payment(currency, amount - 1, payee)
+    await wait_for_balance(receiver, currency, amount - 1)
     await wait_for_balance(sender, currency, 1)
 
 

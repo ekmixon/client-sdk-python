@@ -63,6 +63,6 @@ async def travel_rule_threshold(diem_client: AsyncClient) -> int:
 
 async def start_app(diem_client: AsyncClient, app_name: str) -> Tuple[AppConfig, App]:
     conf = AppConfig(name=app_name)
-    print("launch %s with config %s" % (app_name, conf))
+    print(f"launch {app_name} with config {conf}")
     app = await conf.start(diem_client)
     return (conf, app)

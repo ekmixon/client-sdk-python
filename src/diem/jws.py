@@ -21,7 +21,7 @@ DIEM_ALG: str = "EdDSA"
 
 class InvalidHeaderError(ValueError):
     def __init__(self, header: str) -> None:
-        super().__init__("invalid JWS message header: %s" % header)
+        super().__init__(f"invalid JWS message header: {header}")
 
 
 def encode(
@@ -43,7 +43,7 @@ def decode(
 ) -> Tuple[Dict[str, Any], str]:
     parts = msg.split(b".")
     if len(parts) != 3:
-        raise ValueError("invalid JWS compact message: %s" % msg)
+        raise ValueError(f"invalid JWS compact message: {msg}")
 
     header, body, sig = parts
 
